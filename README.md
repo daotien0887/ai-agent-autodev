@@ -21,7 +21,11 @@ The system consists of specialized "virtual personnel":
   - **Local**: **Ollama** (Llama 3.1 / DeepSeek) for fast, cost-effective tasks.
   - **Cloud**: **Gemini 1.5 Pro / GPT-4o** for complex architectural reasoning.
 - **Backend/Frontend**: Node.js (NestJS), Next.js (PWA), TailwindCSS.
-- **Automation Tools**: Puppeteer (Web Debugging), Jest (Unit Testing).
+- **Automation Tools**: 
+  - `tools/browser`: Puppeteer (Web Debugging/Screenshots).
+  - `tools/fs`: Safe Read/Write/List files.
+  - `tools/git`: Auto Commit, Push, Checkout.
+  - `tools/exec_command.js`: Run shell commands.
 - **Communication Protocol**: JSON Mode (Strict structured data).
 
 ## 🔄 Development Workflow
@@ -51,10 +55,12 @@ docker run -it --rm --name n8n \
   n8nio/n8n
 ```
 
-### 3. Install Debugging Tools
-```bash
-npm install puppeteer
-```
+### 4. Import n8n Templates
+We have prepared a template with pre-configured Tool Nodes:
+1. Open n8n at `http://localhost:5678`.
+2. Create a new Workflow.
+3. Import the file from your local path: `n8n_templates/agent_tools.json`.
+4. Connect the nodes to your AI Agents.
 
 ## 📈 Featured "Senior Level" Capabilities
 - **Hybrid AI Model Strategy**: Prioritizes local processing for data privacy and significant cost reduction.

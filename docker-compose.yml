@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n_agent_orchestrator
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+      - ./workspace:/data/workspace
+      - ./tools:/data/tools
+      - ./agent_config:/data/agent_config
+    # Execute commands as root to have permission to write to mapped volumes if needed, 
+    # or ensure UUIDs match. For local dev, running as default usually works if permissions are loose.
+    # user: "1000:1000" 
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Optional: Ollama service if user wants to run it inside Docker network
+  # ollama:
+  #   image: ollama/ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_storage:/root/.ollama
