@@ -26,6 +26,7 @@ The system consists of specialized "virtual personnel":
   - `tools/fs`: Safe Read/Write/List files.
   - `tools/git`: Auto Commit, Push, Checkout.
   - `tools/exec_command.js`: Run shell commands.
+  - `tools/tests`: Scripts for connectivity and model verification.
 - **Communication Protocol**: JSON Mode (Strict structured data).
 
 ## 🔄 Development Workflow

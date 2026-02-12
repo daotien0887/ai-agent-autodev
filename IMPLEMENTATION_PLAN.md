@@ -23,8 +23,9 @@ This document tracks the step-by-step implementation progress of the system desi
     - Push to GitHub (`ai-agent-autodev`).
 - [x] **1.4. AI Model Infrastructure**
     - Install Ollama (Local LLM host).
-    - ⏳ Pulling `llama3.1` (General Purpose Agent).
-    - ⏳ Pulling `deepseek-coder` (Coding Specialist).
+    - ⏳ Pulling `llama3.1` (24% complete).
+    - ⏳ Pulling `deepseek-coder` (Pending).
+    - [x] **Verified Connectivity**: n8n container can reach host Ollama.
 
 ## Phase 2: Agent "Brain" Configuration 🧠
 *Goal: Define the personality, rules, and instructions for each Agent.*
@@ -51,6 +52,9 @@ This document tracks the step-by-step implementation progress of the system desi
     - Create `tools/git/commit.js` (Auto commit).
     - Create `tools/git/push.js` (Auto push).
     - Create `tools/git/checkout.js` (Branch management).
+- [x] **3.4. Verification Tools**
+    - Create `tools/tests/test_ollama_connection.js`.
+    - Create `tools/tests/test_qwen_cloud.js`.
 
 ## Phase 4: n8n Workflow Orchestration 🔄
 *Goal: Connect the components into a running logic loop.*
