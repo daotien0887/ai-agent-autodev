@@ -1,48 +1,48 @@
 # 🤖 AI Multi-Agent AutoDev System (V2)
 
-Hệ thống phát triển phần mềm tự động sử dụng kiến trúc Multi-Agent (Đa tác tử), điều phối bởi n8n và hỗ trợ mô hình Hybrid AI (Ollama + Cloud LLM).
+A comprehensive autonomous software development system using a Multi-Agent architecture, orchestrated by n8n and powered by a Hybrid AI model (Ollama + Cloud LLMs).
 
-## 🚀 Tổng quan hệ thống
-Đây không chỉ là một công cụ chat với AI, mà là một **Agentic Workflow** hoàn chỉnh. Hệ thống có khả năng tự hiểu yêu cầu, lập kế hoạch, viết code, tự kiểm thử và tự sửa lỗi (Self-Healing) trực tiếp trên trình duyệt.
+## 🚀 System Overview
+This is more than just an AI chatbot; it is a complete **Agentic Workflow**. The system is capable of understanding requirements, planning, coding, self-testing, and autonomous debugging (Self-Healing) directly within a browser environment.
 
-## 🏗️ Kiến trúc Multi-Agent
-Hệ thống bao gồm các "nhân sự ảo" chuyên biệt:
+## 🏗️ Multi-Agent Architecture
+The system consists of specialized "virtual personnel":
 
-- **Architect (Brain)**: Phân tích dự án, lập kế hoạch 5 bước lưu dưới dạng JSON Plan.
-- **Senior Coder (Doer)**: Thực thi code trực tiếp vào file system (`write_file`).
-- **QA/Tester (Reviewer)**: Viết unit test và chạy kiểm thử tự động.
-- **Browser Debugger (Eyes)**: Khởi chạy Puppeteer để bắt lỗi Console và chụp ảnh màn hình UI.
-- **DevOps (Pipeline)**: Quản lý Git Flow và Deployment.
-- **n8n (Orchestrator)**: Quản lý trạng thái và vòng lặp phản hồi.
+- **Architect (Brain)**: Analyzes the project and generates a 5-step implementation plan in JSON format.
+- **Senior Coder (Doer)**: Directly executes code changes into the file system (`write_file`).
+- **QA/Tester (Reviewer)**: Writes unit tests and runs automated test suites.
+- **Browser Debugger (Eyes)**: Launches Puppeteer to capture console errors and take UI screenshots.
+- **DevOps (Pipeline)**: Manages Git flow, branches, and deployment processes.
+- **n8n (Orchestrator)**: Manages state transitions and handles the feedback loops.
 
 ## 🛠️ Tech Stack
 - **Core Orchestration**: [n8n](https://n8n.io/)
 - **AI Models**: 
-  - Local: **Ollama** (Llama 3.1 / DeepSeek) cho các tác vụ nhanh/tiết kiệm.
-  - Cloud: **Gemini 1.5 Pro / GPT-4o** cho tư duy kiến trúc.
+  - **Local**: **Ollama** (Llama 3.1 / DeepSeek) for fast, cost-effective tasks.
+  - **Cloud**: **Gemini 1.5 Pro / GPT-4o** for complex architectural reasoning.
 - **Backend/Frontend**: Node.js (NestJS), Next.js (PWA), TailwindCSS.
 - **Automation Tools**: Puppeteer (Web Debugging), Jest (Unit Testing).
-- **Communication Protocol**: JSON Mode (Cấu trúc dữ liệu nghiêm ngặt).
+- **Communication Protocol**: JSON Mode (Strict structured data).
 
-## 🔄 Vòng lặp phát triển (Workflow)
-1. **User Trigger**: Nhập yêu cầu qua Chat/Webhook.
-2. **Planning**: Architect quét toàn bộ codebase và tạo Plan.
+## 🔄 Development Workflow
+1. **User Trigger**: Requirements received via Chat or Webhook.
+2. **Planning**: The Architect scans the codebase and generates a structured Plan.
 3. **Execution Loop**: 
-   - Coder viết mã nguồn.
-   - Tester chạy unit test.
-   - **Debugger** kiểm tra lỗi hiển thị trên trình duyệt.
-   - Nếu lỗi → AI tự động đọc log và sửa lại (Self-Correction).
-4. **Push**: Hoàn tất task và đẩy lên GitHub via `gh cli`.
+   - Coder implements the features.
+   - Tester runs unit tests.
+   - **Debugger** inspects the UI for visual or console errors.
+   - If an error is detected → AI automatically reads logs/screenshots and fixes the code (**Self-Correction**).
+4. **Finalization**: Tasks are completed and pushed to GitHub via `gh cli`.
 
-## ⚙️ Hướng dẫn cài đặt
+## ⚙️ Setup Instructions
 
-### 1. Yêu cầu hệ thống
+### 1. Prerequisites
 - Docker & Docker Compose
 - Node.js & npm
-- [Ollama](https://ollama.com/) (Chạy local mô hình Llama3 hoặc DeepSeek)
+- [Ollama](https://ollama.com/) (Running Llama3 or DeepSeek locally)
 - [GitHub CLI (gh)](https://cli.github.com/)
 
-### 2. Khởi chạy n8n với Docker
+### 2. Launch n8n with Docker
 ```bash
 docker run -it --rm --name n8n \
   -p 5678:5678 \
@@ -51,16 +51,16 @@ docker run -it --rm --name n8n \
   n8nio/n8n
 ```
 
-### 3. Cài đặt công cụ Debug
+### 3. Install Debugging Tools
 ```bash
 npm install puppeteer
 ```
 
-## 📈 Tính năng "Senior Level" nổi bật
-- **Hybrid AI Model**: Ưu tiên xử lý local để bảo mật dữ liệu và tiết kiệm chi phí.
-- **JSON Mode Strict**: Đảm bảo mọi giao tiếp giữa Agent và Workflow chính xác 100%.
-- **Vision-based Debugging**: Có khả năng chụp ảnh màn hình và phân tích lỗi giao diện.
-- **Shared Workspace**: Các Agent thực sự thao tác trên cùng một folder code như một team Dev người thật.
+## 📈 Featured "Senior Level" Capabilities
+- **Hybrid AI Model Strategy**: Prioritizes local processing for data privacy and significant cost reduction.
+- **Strict JSON Mode**: Ensures 100% reliable communication between Agents and workflows.
+- **Vision-based Debugging**: Uses screenshots and DOM snippets to analyze UI failures.
+- **Shared Workspace**: Agents interact with the same physical project directory, simulating a real-world development team.
 
 ---
-*Dự án được phát triển nhằm mô phỏng quy trình phần mềm chuyên nghiệp sử dụng sức mạnh của Agentic AI.*
+*This project is designed to simulate a professional software engineering lifecycle driven by Agentic AI.*
