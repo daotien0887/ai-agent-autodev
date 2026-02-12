@@ -1,0 +1,139 @@
+{
+    "name": "Flow 3: Local Deployment",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "deploy-local",
+                "options": {}
+            },
+            "name": "Webhook: Start Deploy",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/fs/read_file.js /data/agent_config/roles/devops.md"
+            },
+            "name": "Tool: Read DevOps Role",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                600,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/exec_command.js \"npx prisma migrate dev\" /data/workspace/banle"
+            },
+            "name": "Tool: DB Migration",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                800,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/exec_command.js \"npm install && npm run build\" /data/workspace/banle"
+            },
+            "name": "Tool: Install & Build",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/exec_command.js \"npm run dev\" /data/workspace/banle"
+            },
+            "name": "Tool: Start Dev Server",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                1200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "qwen3-coder:480b-cloud",
+                "options": {
+                    "systemPrompt": "You are DevOps. Review the logs and confirm if the local deployment was successful."
+                }
+            },
+            "name": "AI: Deploy Verification",
+            "type": "n8n-nodes-base.ollama",
+            "typeVersion": 1,
+            "position": [
+                1400,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook: Start Deploy": {
+            "main": [
+                [
+                    {
+                        "node": "Tool: Read DevOps Role",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tool: Read DevOps Role": {
+            "main": [
+                [
+                    {
+                        "node": "Tool: DB Migration",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tool: DB Migration": {
+            "main": [
+                [
+                    {
+                        "node": "Tool: Install & Build",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tool: Install & Build": {
+            "main": [
+                [
+                    {
+                        "node": "Tool: Start Dev Server",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tool: Start Dev Server": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Deploy Verification",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

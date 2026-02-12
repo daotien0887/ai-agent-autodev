@@ -1,0 +1,142 @@
+{
+    "name": "Flow 2: Code and Test",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "execute-tasks",
+                "options": {}
+            },
+            "name": "Webhook: Start Execution",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/fs/read_file.js /data/workspace/banle/TASKS.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/ARCHITECTURE_PORTAL.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/BACKEND_ARCHITECTURE.md"
+            },
+            "name": "Tool: Read Tasks & Arch",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                600,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "qwen3-coder:480b-cloud",
+                "options": {
+                    "systemPrompt": "You are a Coder. Identify the next 'To Do' task from TASKS.md and implement the code according to the architecture docs."
+                }
+            },
+            "name": "AI: Coder Specialist",
+            "type": "n8n-nodes-base.ollama",
+            "typeVersion": 1,
+            "position": [
+                800,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/fs/write_file.js /data/workspace/banle/{{$json.filename}} \"{{ btoa($json.code) }}\" overwrite"
+            },
+            "name": "Tool: Write Source Code",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "qwen3-coder:480b-cloud",
+                "options": {
+                    "systemPrompt": "You are a Tester. Write a unit test for the code just implemented."
+                }
+            },
+            "name": "AI: Tester Specialist",
+            "type": "n8n-nodes-base.ollama",
+            "typeVersion": 1,
+            "position": [
+                1200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/fs/write_file.js /data/workspace/banle/test/{{$json.test_filename}} \"{{ btoa($json.test_code) }}\" overwrite && npm test"
+            },
+            "name": "Tool: Write & Run Test",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                1400,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook: Start Execution": {
+            "main": [
+                [
+                    {
+                        "node": "Tool: Read Tasks & Arch",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tool: Read Tasks & Arch": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Coder Specialist",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Coder Specialist": {
+            "main": [
+                [
+                    {
+                        "node": "Tool: Write Source Code",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tool: Write Source Code": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Tester Specialist",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Tester Specialist": {
+            "main": [
+                [
+                    {
+                        "node": "Tool: Write & Run Test",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}
