@@ -1,0 +1,54 @@
+{
+    "name": "Multi-Agent Logic Starter",
+    "nodes": [
+        {
+            "parameters": {
+                "command": "=node /data/tools/fs/read_file.js /data/agent_config/roles/architect.md"
+            },
+            "name": "Read Architect Prompt",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                460,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/fs/read_file.js /data/agent_config/roles/coder.md"
+            },
+            "name": "Read Coder Prompt",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                460,
+                500
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/fs/read_file.js /data/agent_config/roles/tester.md"
+            },
+            "name": "Read Tester Prompt",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                460,
+                700
+            ]
+        },
+        {
+            "parameters": {
+                "content": "PLEASE CONNECT YOUR AI NODES HERE (OLLAMA / OPENAI)"
+            },
+            "name": "Note: Connect AI",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                700,
+                300
+            ]
+        }
+    ],
+    "connections": {}
+}

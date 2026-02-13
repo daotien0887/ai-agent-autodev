@@ -1,0 +1,119 @@
+{
+    "name": "Flow 1: Analytic Project Request",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "analyze-project",
+                "options": {}
+            },
+            "name": "Webhook: Start Analysis",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/fs/read_file.js /data/workspace/banle/docs/FEATURES.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/PORTAL_NAVIGATION.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/REQUIREMENTS.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/USE_CASES.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/DATABASE_ARCHITECTURE.md"
+            },
+            "name": "Tool: Read All Docs",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                600,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "qwen3-coder:480b-cloud",
+                "options": {
+                    "systemPrompt": "=You are a Memory Specialist. Compress the following docs into high-density context."
+                }
+            },
+            "name": "AI: Memory Specialist",
+            "type": "n8n-nodes-base.ollama",
+            "typeVersion": 1,
+            "position": [
+                800,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "qwen3-coder:480b-cloud",
+                "options": {
+                    "systemPrompt": "=You are the Architect. Based on the Memory Context provided, generate a reviewable TASKS.md file."
+                }
+            },
+            "name": "AI: Architect",
+            "type": "n8n-nodes-base.ollama",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "command": "=node /data/tools/fs/write_file.js /data/workspace/banle/TASKS.md \"{{ btoa($json.task_list_markdown) }}\" overwrite"
+            },
+            "name": "Tool: Write TASKS.md",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                1200,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook: Start Analysis": {
+            "main": [
+                [
+                    {
+                        "node": "Tool: Read All Docs",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Tool: Read All Docs": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Memory Specialist",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Memory Specialist": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Architect",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Architect": {
+            "main": [
+                [
+                    {
+                        "node": "Tool: Write TASKS.md",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

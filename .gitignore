@@ -5,10 +5,27 @@
 # Node modules
 node_modules/
 
-# n8n data
+# n8n data - exclude databases but allow workflows
+n8n_data/*.sqlite*
 n8n_data/database.sqlite
 n8n_data/database.sqlite-shm
 n8n_data/database.sqlite-wal
+n8n_data/*.log
+n8n_data/binaryData/
+n8n_data/ssh/
+n8n_data/git/
+n8n_data/config
+
+# n8n_data_import - exclude databases but allow workflows
+n8n_data_import/*.sqlite*
+n8n_data_import/database.sqlite
+n8n_data_import/database.sqlite-shm
+n8n_data_import/database.sqlite-wal
+n8n_data_import/*.log
+n8n_data_import/binaryData/
+n8n_data_import/ssh/
+n8n_data_import/git/
+n8n_data_import/config
 
 # Logs
 *.log
