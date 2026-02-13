@@ -32,3 +32,5 @@ n8n_data_import/config
 
 # OS files
 .DS_Store
+n8n_data/crash.journal
+n8n_data/nodes/
