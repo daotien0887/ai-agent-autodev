@@ -1,0 +1,175 @@
+{
+    "name": "Flow 2: Code and Test (Fixed)",
+    "active": true,
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "execute-tasks",
+                "options": {}
+            },
+            "name": "Webhook: Start Execution",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const { execSync } = require('child_process');\nconst tasks = execSync('node /data/tools/fs/read_file.js /data/workspace/banle/TASKS.md').toString();\nconst arch1 = execSync('node /data/tools/fs/read_file.js /data/workspace/banle/docs/ARCHITECTURE_PORTAL.md').toString();\nconst arch2 = execSync('node /data/tools/fs/read_file.js /data/workspace/banle/docs/BACKEND_ARCHITECTURE.md').toString();\n\nreturn {\n  tasks,\n  architecture: arch1 + '\\n\\n' + arch2\n};"
+            },
+            "name": "Code: Read Tasks & Arch",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                600,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://host.docker.internal:11434/api/generate",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "model",
+                            "value": "qwen3-coder:480b-cloud"
+                        },
+                        {
+                            "name": "prompt",
+                            "value": "=You are a Coder. Identify the next 'To Do' task from TASKS.md and implement the code according to the architecture docs.\n\nTasks:\n{{ $json.tasks }}\n\nArchitecture:\n{{ $json.architecture }}\n\nReturn a JSON response with the following structure:\n{\n  \"filename\": \"path/to/file.js\",\n  \"code\": \"the complete source code\"\n}"
+                        },
+                        {
+                            "name": "stream",
+                            "value": "false"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "AI: Coder Specialist (HTTP)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                800,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const { execSync } = require('child_process');\nconst response = $node[\"AI: Coder Specialist (HTTP)\"].json.response;\n// Expecting AI to return JSON with filename and code\nlet data;\ntry {\n  data = JSON.parse(response.replace(/```json|```/g, ''));\n} catch (e) {\n  throw new Error('AI failed to return valid JSON: ' + response);\n}\n\nconst base64Code = Buffer.from(data.code).toString('base64');\nexecSync(`node /data/tools/fs/write_file.js /data/workspace/banle/${data.filename} \"${base64Code}\" overwrite`);\n\nreturn { filename: data.filename, status: 'written', code: data.code };"
+            },
+            "name": "Code: Write Source Code",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://host.docker.internal:11434/api/generate",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "model",
+                            "value": "qwen3-coder:480b-cloud"
+                        },
+                        {
+                            "name": "prompt",
+                            "value": "=You are a Tester. Write a unit test for the code just implemented.\n\nFilename: {{ $json.filename }}\n\nCode:\n{{ $json.code }}\n\nReturn a JSON response with the following structure:\n{\n  \"test_filename\": \"path/to/test_file.test.js\",\n  \"test_code\": \"the complete test code\"\n}"
+                        },
+                        {
+                            "name": "stream",
+                            "value": "false"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "AI: Tester Specialist (HTTP)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                1200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const { execSync } = require('child_process');\nconst response = $node[\"AI: Tester Specialist (HTTP)\"].json.response;\nlet data;\ntry {\n  data = JSON.parse(response.replace(/```json|```/g, ''));\n} catch (e) {\n  throw new Error('AI failed to return valid JSON: ' + response);\n}\n\nconst base64TestCode = Buffer.from(data.test_code).toString('base64');\nexecSync(`node /data/tools/fs/write_file.js /data/workspace/banle/test/${data.test_filename} \"${base64TestCode}\" overwrite`);\n\nconst testResult = execSync('npm test', { cwd: '/data/workspace/banle' }).toString();\nreturn { test_result: testResult };"
+            },
+            "name": "Code: Write & Run Test",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                1400,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook: Start Execution": {
+            "main": [
+                [
+                    {
+                        "node": "Code: Read Tasks & Arch",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code: Read Tasks & Arch": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Coder Specialist (HTTP)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Coder Specialist (HTTP)": {
+            "main": [
+                [
+                    {
+                        "node": "Code: Write Source Code",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code: Write Source Code": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Tester Specialist (HTTP)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Tester Specialist (HTTP)": {
+            "main": [
+                [
+                    {
+                        "node": "Code: Write & Run Test",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

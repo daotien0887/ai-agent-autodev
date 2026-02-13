@@ -1,0 +1,152 @@
+{
+    "name": "Flow 1: Analytic Project Request (Fixed)",
+    "active": true,
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "analyze-project",
+                "options": {}
+            },
+            "name": "Webhook: Start Analysis",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const { execSync } = require('child_process');\nconst files = [\n  '/data/workspace/banle/docs/FEATURES.md',\n  '/data/workspace/banle/docs/PORTAL_NAVIGATION.md',\n  '/data/workspace/banle/docs/REQUIREMENTS.md',\n  '/data/workspace/banle/docs/USE_CASES.md',\n  '/data/workspace/banle/docs/DATABASE_ARCHITECTURE.md'\n];\n\nlet combinedContent = '';\nfor (const file of files) {\n  try {\n    const content = execSync(`node /data/tools/fs/read_file.js ${file}`).toString();\n    combinedContent += `\\n\\n--- FILE: ${file} ---\\n${content}`;\n  } catch (err) {\n    console.error(`Error reading ${file}:`, err.message);\n  }\n}\n\nreturn { combined_docs: combinedContent };"
+            },
+            "name": "Code: Read All Docs",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                600,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://host.docker.internal:11434/api/generate",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "model",
+                            "value": "qwen3-coder:480b-cloud"
+                        },
+                        {
+                            "name": "prompt",
+                            "value": "=You are a Memory Specialist. Compress the following docs into high-density context:\\n\\n{{ $json.combined_docs }}"
+                        },
+                        {
+                            "name": "stream",
+                            "value": "false"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "AI: Memory Specialist (HTTP)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                800,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://host.docker.internal:11434/api/generate",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "model",
+                            "value": "qwen3-coder:480b-cloud"
+                        },
+                        {
+                            "name": "prompt",
+                            "value": "=You are the Architect. Based on the Memory Context provided, generate a reviewable TASKS.md file:\\n\\n{{ $json.response }}"
+                        },
+                        {
+                            "name": "stream",
+                            "value": "false"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "AI: Architect (HTTP)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                1000,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const { execSync } = require('child_process');\nconst markdown = $node[\"AI: Architect (HTTP)\"].json.response; \n// Handle potential JSON wrapping if AI returned JSON string\nlet taskMarkdown = markdown;\ntry {\n  const parsed = JSON.parse(markdown.replace(/```json|```/g, ''));\n  if (parsed.task_list_markdown) taskMarkdown = parsed.task_list_markdown;\n} catch (e) {}\n\nconst base64Content = Buffer.from(taskMarkdown).toString('base64');\nexecSync(`node /data/tools/fs/write_file.js /data/workspace/banle/TASKS.md \"${base64Content}\" overwrite`);\n\nreturn { status: 'success', path: '/data/workspace/banle/TASKS.md' };"
+            },
+            "name": "Code: Write TASKS.md",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                1200,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook: Start Analysis": {
+            "main": [
+                [
+                    {
+                        "node": "Code: Read All Docs",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code: Read All Docs": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Memory Specialist (HTTP)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Memory Specialist (HTTP)": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Architect (HTTP)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Architect (HTTP)": {
+            "main": [
+                [
+                    {
+                        "node": "Code: Write TASKS.md",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

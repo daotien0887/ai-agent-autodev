@@ -45,5 +45,6 @@ This document tracks the step-by-step implementation progress of the system desi
 
 ## 📝 Notes
 - Phase 4 contains the 3-Step core pipeline: Analyze -> Code -> Deploy.
-- Use `memory_specialist.md` to summarize long docs.
-- Flow 3 handles Prisma migrations and local build/dev restart.
+- **Migration to Code Nodes**: Due to current n8n version constraints, all `executeCommand` nodes have been migrated to `Code` nodes for better reliability.
+- **Environment Update**: `NODE_FUNCTION_ALLOW_EXTERNAL` is set to `child_process,fs,path,buffer` to allow full tool access.
+- **SQLite Lock Issue**: If automated imports fail, perform a manual import via n8n UI. Ensure the "Active" toggle is ON.

@@ -1,0 +1,17 @@
+# Environment variables
+.env
+.env.local
+
+# Node modules
+node_modules/
+
+# n8n data
+n8n_data/database.sqlite
+n8n_data/database.sqlite-shm
+n8n_data/database.sqlite-wal
+
+# Logs
+*.log
+
+# OS files
+.DS_Store

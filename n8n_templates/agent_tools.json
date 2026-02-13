@@ -3,10 +3,10 @@
   "nodes": [
     {
       "parameters": {
-        "command": "=node /data/tools/fs/list_dir.js /data/workspace"
+        "jsCode": "const { execSync } = require('child_process');\nconst dir = $json.directory || '/data/workspace';\nconst result = execSync(`node /data/tools/fs/list_dir.js ${dir}`).toString();\nreturn JSON.parse(result);"
       },
       "name": "Tool: List Files",
-      "type": "n8n-nodes-base.executeCommand",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
         460,
@@ -15,10 +15,10 @@
     },
     {
       "parameters": {
-        "command": "=node /data/tools/fs/read_file.js /data/workspace/{{$json.filename}}"
+        "jsCode": "const { execSync } = require('child_process');\nconst filename = $json.filename;\nconst result = execSync(`node /data/tools/fs/read_file.js /data/workspace/${filename}`).toString();\nreturn JSON.parse(result);"
       },
       "name": "Tool: Read File",
-      "type": "n8n-nodes-base.executeCommand",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
         660,
@@ -27,10 +27,10 @@
     },
     {
       "parameters": {
-        "command": "=node /data/tools/fs/write_file.js /data/workspace/{{$json.filename}} {{$json.content_base64}}"
+        "jsCode": "const { execSync } = require('child_process');\nconst filename = $json.filename;\nconst base64Content = $json.content_base64;\nconst result = execSync(`node /data/tools/fs/write_file.js /data/workspace/${filename} \"${base64Content}\" overwrite`).toString();\nreturn JSON.parse(result);"
       },
       "name": "Tool: Write File",
-      "type": "n8n-nodes-base.executeCommand",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
         860,
@@ -39,25 +39,13 @@
     },
     {
       "parameters": {
-        "command": "=node /data/tools/git/commit.js \"{{$json.message}}\""
+        "jsCode": "const { execSync } = require('child_process');\nconst message = $json.message || 'update';\nconst result = execSync(`node /data/tools/git/commit.js \"${message}\"`).toString();\nreturn { result: result.trim() };"
       },
       "name": "Tool: Git Commit",
-      "type": "n8n-nodes-base.executeCommand",
+      "type": "n8n-nodes-base.code",
       "typeVersion": 1,
       "position": [
         1060,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "command": "=node /data/tools/browser/inspect.js {{$json.url}} /data/workspace/debug_SCREENSHOT.png"
-      },
-      "name": "Tool: Browser Inspect",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [
-        1260,
         300
       ]
     }

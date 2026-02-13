@@ -14,6 +14,9 @@ services:
       - NODE_ENV=production
       - WEBHOOK_URL=http://localhost:5678/
       - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
+      - NODE_FUNCTION_ALLOW_EXTERNAL=child_process,fs,path,buffer
+      - NODE_FUNCTION_ALLOW_BUILTIN=*
+      - N8N_BLOCK_SVC_COMMAND_EXECUTION=false
     volumes:
       - ./n8n_data:/home/node/.n8n
       - ./workspace:/data/workspace
@@ -24,7 +27,6 @@ services:
     # user: "1000:1000" 
     extra_hosts:
       - "host.docker.internal:host-gateway"
-
   # Optional: Ollama service if user wants to run it inside Docker network
   # ollama:
   #   image: ollama/ollama

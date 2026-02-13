@@ -1,0 +1,18 @@
+{
+    "name": "Test Code Node",
+    "nodes": [
+        {
+            "parameters": {
+                "jsCode": "return { result: 'it works' };"
+            },
+            "name": "Code",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        }
+    ],
+    "connections": {}
+}

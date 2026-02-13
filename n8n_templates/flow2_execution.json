@@ -1,5 +1,6 @@
 {
     "name": "Flow 2: Code and Test",
+    "active": true,
     "nodes": [
         {
             "parameters": {
@@ -17,10 +18,10 @@
         },
         {
             "parameters": {
-                "command": "=node /data/tools/fs/read_file.js /data/workspace/banle/TASKS.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/ARCHITECTURE_PORTAL.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/BACKEND_ARCHITECTURE.md"
+                "jsCode": "const { execSync } = require('child_process');\nconst tasks = execSync('node /data/tools/fs/read_file.js /data/workspace/banle/TASKS.md').toString();\nconst arch1 = execSync('node /data/tools/fs/read_file.js /data/workspace/banle/docs/ARCHITECTURE_PORTAL.md').toString();\nconst arch2 = execSync('node /data/tools/fs/read_file.js /data/workspace/banle/docs/BACKEND_ARCHITECTURE.md').toString();\n\nreturn {\n  tasks,\n  architecture: arch1 + '\\n\\n' + arch2\n};"
             },
-            "name": "Tool: Read Tasks & Arch",
-            "type": "n8n-nodes-base.executeCommand",
+            "name": "Code: Read Tasks & Arch",
+            "type": "n8n-nodes-base.code",
             "typeVersion": 1,
             "position": [
                 600,
@@ -44,10 +45,10 @@
         },
         {
             "parameters": {
-                "command": "=node /data/tools/fs/write_file.js /data/workspace/banle/{{$json.filename}} \"{{ btoa($json.code) }}\" overwrite"
+                "jsCode": "const { execSync } = require('child_process');\nconst response = $node[\"AI: Coder Specialist\"].json.response;\n// Expecting AI to return JSON with filename and code\nlet data;\ntry {\n  data = JSON.parse(response.replace(/```json|```/g, ''));\n} catch (e) {\n  throw new Error('AI failed to return valid JSON: ' + response);\n}\n\nconst base64Code = Buffer.from(data.code).toString('base64');\nexecSync(`node /data/tools/fs/write_file.js /data/workspace/banle/${data.filename} \"${base64Code}\" overwrite`);\n\nreturn { filename: data.filename, status: 'written' };"
             },
-            "name": "Tool: Write Source Code",
-            "type": "n8n-nodes-base.executeCommand",
+            "name": "Code: Write Source Code",
+            "type": "n8n-nodes-base.code",
             "typeVersion": 1,
             "position": [
                 1000,
@@ -71,10 +72,10 @@
         },
         {
             "parameters": {
-                "command": "=node /data/tools/fs/write_file.js /data/workspace/banle/test/{{$json.test_filename}} \"{{ btoa($json.test_code) }}\" overwrite && npm test"
+                "jsCode": "const { execSync } = require('child_process');\nconst response = $node[\"AI: Tester Specialist\"].json.response;\nlet data;\ntry {\n  data = JSON.parse(response.replace(/```json|```/g, ''));\n} catch (e) {\n  throw new Error('AI failed to return valid JSON: ' + response);\n}\n\nconst base64TestCode = Buffer.from(data.test_code).toString('base64');\nexecSync(`node /data/tools/fs/write_file.js /data/workspace/banle/test/${data.test_filename} \"${base64TestCode}\" overwrite`);\n\nconst testResult = execSync('npm test', { cwd: '/data/workspace/banle' }).toString();\nreturn { test_result: testResult };"
             },
-            "name": "Tool: Write & Run Test",
-            "type": "n8n-nodes-base.executeCommand",
+            "name": "Code: Write & Run Test",
+            "type": "n8n-nodes-base.code",
             "typeVersion": 1,
             "position": [
                 1400,
@@ -87,14 +88,14 @@
             "main": [
                 [
                     {
-                        "node": "Tool: Read Tasks & Arch",
+                        "node": "Code: Read Tasks & Arch",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Tool: Read Tasks & Arch": {
+        "Code: Read Tasks & Arch": {
             "main": [
                 [
                     {
@@ -109,14 +110,14 @@
             "main": [
                 [
                     {
-                        "node": "Tool: Write Source Code",
+                        "node": "Code: Write Source Code",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Tool: Write Source Code": {
+        "Code: Write Source Code": {
             "main": [
                 [
                     {
@@ -131,7 +132,7 @@
             "main": [
                 [
                     {
-                        "node": "Tool: Write & Run Test",
+                        "node": "Code: Write & Run Test",
                         "type": "main",
                         "index": 0
                     }

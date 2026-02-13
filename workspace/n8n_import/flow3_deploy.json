@@ -1,0 +1,87 @@
+{
+    "name": "Flow 3: Local Deployment (Fixed)",
+    "active": true,
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "deploy-local",
+                "options": {}
+            },
+            "name": "Webhook: Start Deploy",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const { execSync } = require('child_process');\nconst logs = [];\n\ntry {\n  logs.push({ step: 'Migration', result: execSync('npx prisma migrate dev', { cwd: '/data/workspace/banle' }).toString() });\n  logs.push({ step: 'Build', result: execSync('npm install && npm run build', { cwd: '/data/workspace/banle' }).toString() });\n  // Using '&' to run in background if it's a dev server, but for build we want it to finish.\n  // npm run dev usually hangs, so we might need a different strategy for restart.\n} catch (e) {\n  logs.push({ step: 'Error', result: e.message });\n}\n\nreturn { logs: JSON.stringify(logs, null, 2) };"
+            },
+            "name": "Code: Deploy Steps",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                600,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://host.docker.internal:11434/api/generate",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "model",
+                            "value": "qwen3-coder:480b-cloud"
+                        },
+                        {
+                            "name": "prompt",
+                            "value": "=You are DevOps. Review the logs and confirm if the local deployment was successful.\n\nDeployment Logs:\n{{ $json.logs }}\n\nProvide a concise summary of:\n1. Deployment status (Success/Failed)\n2. Any issues found\n3. Recommendations if any"
+                        },
+                        {
+                            "name": "stream",
+                            "value": "false"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "AI: Deploy Verification (HTTP)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                800,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook: Start Deploy": {
+            "main": [
+                [
+                    {
+                        "node": "Code: Deploy Steps",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code: Deploy Steps": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Deploy Verification (HTTP)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

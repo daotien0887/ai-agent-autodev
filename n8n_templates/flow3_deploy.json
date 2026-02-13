@@ -1,5 +1,6 @@
 {
     "name": "Flow 3: Local Deployment",
+    "active": true,
     "nodes": [
         {
             "parameters": {
@@ -17,49 +18,13 @@
         },
         {
             "parameters": {
-                "command": "=node /data/tools/fs/read_file.js /data/agent_config/roles/devops.md"
+                "jsCode": "const { execSync } = require('child_process');\nconst logs = [];\n\ntry {\n  logs.push({ step: 'Migration', result: execSync('npx prisma migrate dev', { cwd: '/data/workspace/banle' }).toString() });\n  logs.push({ step: 'Build', result: execSync('npm install && npm run build', { cwd: '/data/workspace/banle' }).toString() });\n  // Using '&' to run in background if it's a dev server, but for build we want it to finish.\n  // npm run dev usually hangs, so we might need a different strategy for restart.\n} catch (e) {\n  logs.push({ step: 'Error', result: e.message });\n}\n\nreturn { logs };"
             },
-            "name": "Tool: Read DevOps Role",
-            "type": "n8n-nodes-base.executeCommand",
-            "typeVersion": 1,
-            "position": [
-                600,
-                300
-            ]
-        },
-        {
-            "parameters": {
-                "command": "=node /data/tools/exec_command.js \"npx prisma migrate dev\" /data/workspace/banle"
-            },
-            "name": "Tool: DB Migration",
-            "type": "n8n-nodes-base.executeCommand",
+            "name": "Code: Deploy Steps",
+            "type": "n8n-nodes-base.code",
             "typeVersion": 1,
             "position": [
                 800,
-                300
-            ]
-        },
-        {
-            "parameters": {
-                "command": "=node /data/tools/exec_command.js \"npm install && npm run build\" /data/workspace/banle"
-            },
-            "name": "Tool: Install & Build",
-            "type": "n8n-nodes-base.executeCommand",
-            "typeVersion": 1,
-            "position": [
-                1000,
-                300
-            ]
-        },
-        {
-            "parameters": {
-                "command": "=node /data/tools/exec_command.js \"npm run dev\" /data/workspace/banle"
-            },
-            "name": "Tool: Start Dev Server",
-            "type": "n8n-nodes-base.executeCommand",
-            "typeVersion": 1,
-            "position": [
-                1200,
                 300
             ]
         },
@@ -74,7 +39,7 @@
             "type": "n8n-nodes-base.ollama",
             "typeVersion": 1,
             "position": [
-                1400,
+                1000,
                 300
             ]
         }
@@ -84,47 +49,14 @@
             "main": [
                 [
                     {
-                        "node": "Tool: Read DevOps Role",
+                        "node": "Code: Deploy Steps",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Tool: Read DevOps Role": {
-            "main": [
-                [
-                    {
-                        "node": "Tool: DB Migration",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Tool: DB Migration": {
-            "main": [
-                [
-                    {
-                        "node": "Tool: Install & Build",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Tool: Install & Build": {
-            "main": [
-                [
-                    {
-                        "node": "Tool: Start Dev Server",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Tool: Start Dev Server": {
+        "Code: Deploy Steps": {
             "main": [
                 [
                     {

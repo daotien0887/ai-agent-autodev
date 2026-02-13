@@ -1,0 +1,66 @@
+{
+  "name": "AI Agent Tools Wrapper",
+  "nodes": [
+    {
+      "parameters": {
+        "command": "=node /data/tools/fs/list_dir.js /data/workspace"
+      },
+      "name": "Tool: List Files",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=node /data/tools/fs/read_file.js /data/workspace/{{$json.filename}}"
+      },
+      "name": "Tool: Read File",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=node /data/tools/fs/write_file.js /data/workspace/{{$json.filename}} {{$json.content_base64}}"
+      },
+      "name": "Tool: Write File",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        860,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=node /data/tools/git/commit.js \"{{$json.message}}\""
+      },
+      "name": "Tool: Git Commit",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "=node /data/tools/browser/inspect.js {{$json.url}} /data/workspace/debug_SCREENSHOT.png"
+      },
+      "name": "Tool: Browser Inspect",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1260,
+        300
+      ]
+    }
+  ],
+  "connections": {}
+}

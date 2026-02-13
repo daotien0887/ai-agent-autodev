@@ -1,5 +1,6 @@
 {
     "name": "Flow 1: Analytic Project Request",
+    "active": true,
     "nodes": [
         {
             "parameters": {
@@ -17,10 +18,10 @@
         },
         {
             "parameters": {
-                "command": "=node /data/tools/fs/read_file.js /data/workspace/banle/docs/FEATURES.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/PORTAL_NAVIGATION.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/REQUIREMENTS.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/USE_CASES.md && node /data/tools/fs/read_file.js /data/workspace/banle/docs/DATABASE_ARCHITECTURE.md"
+                "jsCode": "const { execSync } = require('child_process');\nconst files = [\n  '/data/workspace/banle/docs/FEATURES.md',\n  '/data/workspace/banle/docs/PORTAL_NAVIGATION.md',\n  '/data/workspace/banle/docs/REQUIREMENTS.md',\n  '/data/workspace/banle/docs/USE_CASES.md',\n  '/data/workspace/banle/docs/DATABASE_ARCHITECTURE.md'\n];\n\nlet combinedContent = '';\nfor (const file of files) {\n  try {\n    // Tools return JSON strings like {\"content\": \"...\"}\n    const rawResponse = execSync(`node /data/tools/fs/read_file.js ${file}`).toString();\n    const parsed = JSON.parse(rawResponse);\n    const content = parsed.content || parsed.error || 'Empty File';\n    combinedContent += `\\n\\n--- FILE: ${file} ---\\n${content}`;\n  } catch (err) {\n    combinedContent += `\\n\\n--- FILE: ${file} (ERROR) ---\\n${err.message}`;\n  }\n}\n\nreturn { combined_docs: combinedContent };"
             },
-            "name": "Tool: Read All Docs",
-            "type": "n8n-nodes-base.executeCommand",
+            "name": "Code: Read All Docs",
+            "type": "n8n-nodes-base.code",
             "typeVersion": 1,
             "position": [
                 600,
@@ -46,7 +47,7 @@
             "parameters": {
                 "model": "qwen3-coder:480b-cloud",
                 "options": {
-                    "systemPrompt": "=You are the Architect. Based on the Memory Context provided, generate a reviewable TASKS.md file."
+                    "systemPrompt": "=You are the Architect. Based on the Memory Context provided, generate a reviewable technical plan in JSON format."
                 }
             },
             "name": "AI: Architect",
@@ -59,10 +60,10 @@
         },
         {
             "parameters": {
-                "command": "=node /data/tools/fs/write_file.js /data/workspace/banle/TASKS.md \"{{ btoa($json.task_list_markdown) }}\" overwrite"
+                "jsCode": "const { execSync } = require('child_process');\nconst responseText = $node[\"AI: Architect\"].json.response; \n\nlet taskMarkdown = '';\nlet summary = '';\n\ntry {\n  // Attempt to parse AI response as JSON\n  const cleanJsonStr = responseText.replace(/```json|```/g, '').trim();\n  const data = JSON.parse(cleanJsonStr);\n  \n  summary = data.summary || 'Project Plan';\n  \n  if (data.tasks && Array.isArray(data.tasks)) {\n    taskMarkdown = \"# TASKS.md\\n\\n| ID | Role | Title | Description |\\n|---|---|---|---|\\n\";\n    data.tasks.forEach(t => {\n       taskMarkdown += `| ${t.id} | ${t.role} | ${t.title} | ${t.description} |\\n`;\n    });\n  } else {\n    taskMarkdown = responseText; // Fallback to raw response\n  }\n} catch (e) {\n  taskMarkdown = responseText; // Fallback to raw response\n}\n\nconst base64Content = Buffer.from(taskMarkdown).toString('base64');\nexecSync(`node /data/tools/fs/write_file.js /data/workspace/banle/TASKS.md \"${base64Content}\" overwrite`);\n\nreturn { status: 'success', path: '/data/workspace/banle/TASKS.md', summary };"
             },
-            "name": "Tool: Write TASKS.md",
-            "type": "n8n-nodes-base.executeCommand",
+            "name": "Code: Write TASKS.md",
+            "type": "n8n-nodes-base.code",
             "typeVersion": 1,
             "position": [
                 1200,
@@ -75,14 +76,14 @@
             "main": [
                 [
                     {
-                        "node": "Tool: Read All Docs",
+                        "node": "Code: Read All Docs",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Tool: Read All Docs": {
+        "Code: Read All Docs": {
             "main": [
                 [
                     {
@@ -108,7 +109,7 @@
             "main": [
                 [
                     {
-                        "node": "Tool: Write TASKS.md",
+                        "node": "Code: Write TASKS.md",
                         "type": "main",
                         "index": 0
                     }
